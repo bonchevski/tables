@@ -5,6 +5,16 @@ Note: The FE project has been created with Node v 18.16.0
 
 ## Install the required packages:
 
+Clone:
+```bash
+    https://github.com/bonchevski/tables.git
+```
+Navigate to the FE root project folder:
+```bash
+cd tables/ordersFE
+```
+And run the following commands within tables/ordersFE:
+
 ```bash
 npm install
 ```
@@ -15,9 +25,29 @@ npm install
 npm run dev
 ```
 
+FE app available at:  http://localhost:5173/
+
 
 # Backend App:
 ## Install the required packages:
+
+Ensure that you have Python and pip installed on your system. If not, you can download and install Python from the official Python website.
+Ensure that you have django installed
+
+Or create a venv this tutorial shows how:
+https://www.javatpoint.com/django-virtual-environment-setup
+
+```bash
+pip installed django
+```
+
+Navigate to the BE root project folder:
+
+```bash
+cd tables/ordersBE
+```
+
+And run the following commands within tables/ordersBE:
 
 ```bash
 pip install -r requirements.txt
