@@ -34,12 +34,8 @@ FE app available at:  http://localhost:5173/
 Ensure that you have Python and pip installed on your system. If not, you can download and install Python from the official Python website.
 Ensure that you have django installed
 
-Or create a venv this tutorial shows how:
-https://www.javatpoint.com/django-virtual-environment-setup
+Or create a venv [this]:https://www.javatpoint.com/django-virtual-environment-setup shows how.
 
-```bash
-pip installed django
-```
 
 Navigate to the BE root project folder:
 
