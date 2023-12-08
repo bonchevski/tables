@@ -1,0 +1,20 @@
+# Ignore node_modules folder
+/ordersFE/node_modules
+
+# Ignore build artifacts
+/ordersFE/build
+/ordersFE/dist
+
+# Ignore environment variables
+/ordersFE/.env
+
+# Ignore package-lock.json (npm)
+/ordersFE/package-lock.json
+# Ignore Django project files except the database
+/ordersBE/__pycache__/
+/ordersBE/*.pyc
+/ordersBE/db.sqlite3
+/ordersBE/media/
+/ordersBE/static/
+/ordersBE/*.log
+/ordersBE/.env
