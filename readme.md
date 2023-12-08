@@ -60,6 +60,10 @@ python manage.py createsuperuser
 ```
 Follow the prompts to create a superuser account. This account can be used to access the Django admin interface.
 
+Or use:
+username: root
+password: root once the server is up and [runnin]:http://127.0.0.1:8000/admin/
+
 Run the Development Server
 Start the development server:
 
