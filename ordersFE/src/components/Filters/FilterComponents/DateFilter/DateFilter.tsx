@@ -10,7 +10,7 @@ const DateFilter: React.FC<DatePickerFilterProps> = ({ onChange, label }) => {
   return (
     <div>
       <label>{label}</label>
-      <DatePicker.RangePicker onChange={onChange} />
+      <DatePicker.RangePicker allowClear={true} onChange={onChange} />
     </div>
   );
 };

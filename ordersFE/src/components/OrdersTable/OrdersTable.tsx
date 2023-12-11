@@ -1,25 +1,15 @@
-import React, { useState } from "react";
-import { Button, Table } from "antd";
+import React, { useEffect, useState } from "react";
+import { Input, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { LuUserPlus } from "react-icons/lu";
 import { LuFilePlus2 } from "react-icons/lu";
 import { LuDollarSign } from "react-icons/lu";
+import { OrderCharacteristics, OrdersDataType, TableFilters } from "../../generalTypes/interface";
+import Filters from "../Filters/Filters";
+import dayjs from "dayjs";
+import { formatDate } from "../../utils";
 
-interface OrderCharacteristics {
-  isPaid: boolean;
-  hasInvoice: boolean;
-  isNewCustomer: boolean;
-}
 
-interface OrdersDataType {
-  key: React.Key;
-  orderNumber: string;
-  createdDate: string;
-  deliveryDate: string;
-  clientName: string;
-  price: number;
-  characteristics: OrderCharacteristics;
-}
 
 const columns: ColumnsType<OrdersDataType> = [
   {
@@ -47,64 +37,158 @@ const columns: ColumnsType<OrdersDataType> = [
   },
 ];
 
-const data: OrdersDataType[] = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    orderNumber: `Order ${i}`,
-    clientName: `Edward King ${i}`,
-    createdDate: "2024-02-01",
-    deliveryDate: "2024-03-01",
-    price: 32 + i,
-    characteristics: {
-      isPaid: true,
-      hasInvoice: false,
-      isNewCustomer: true,
-    },
-  });
+interface OrdersTableProps {
+  data: OrdersDataType[];
 }
 
-
-const OrdersTable: React.FC = () => {
+const OrdersTable: React.FC<OrdersTableProps> = (props: OrdersTableProps) => {
+  const { data } = props;
+  const [tableData, setTableData] = useState<OrdersDataType[]>(data); // Replace 'any[]' with your actual data type
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [loading, setLoading] = useState(false);
 
-  const start = () => {
-    setLoading(true);
-    // ajax request after empty completing
-    setTimeout(() => {
-      setSelectedRowKeys([]);
-      setLoading(false);
-    }, 1000);
+  const [filters, setFilters] = React.useState<TableFilters>();
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target;
+    const filteredData = data.filter((order) => {
+      const { orderNumber, clientName } = order;
+      return orderNumber.includes(value) || clientName.includes(value);
+    });
+    setTableData(filteredData);
+  }
+  const handleCreatedDateChange = (
+    dates: any,
+    dateStrings: [string, string]
+  ) => {
+    const [startDate, endDate] = dateStrings;
+    const start = formatDate(startDate);
+    const end = formatDate(endDate);
+    if(start === 'Invalid Date' || end === 'Invalid Date') {
+      setTableData(data);
+      setFilters({ ...filters, createdDate: null });
+
+    } else {
+      setFilters({ ...filters, createdDate: { start, end } });
+    }
   };
+
+  const hanldeDeliveryDateChange = (
+    dates: any,
+    dateStrings: [string, string]
+  ) => {
+    const [startDate, endDate] = dateStrings;
+    const start = formatDate(startDate);
+    const end = formatDate(endDate);
+    setFilters({ ...filters, deliveryDate: { start, end } });
+    if(start === 'Invalid Date' || end === 'Invalid Date') {
+      setTableData(data);
+    } else {
+      setFilters({ ...filters, createdDate: { start, end } });
+    }
+  };
+
+  const handlePaidChange = (checked: boolean) => {
+    setFilters({ ...filters, isPaid: checked });
+  };
+
+  const handleNewCustomerChange = (checked: boolean) => {
+    setFilters({ ...filters, isNewCustomer: checked });
+  };
+
+  const handleCardChange = (checked: boolean) => {
+    setFilters({ ...filters, isCard: checked });
+  }
+  const handleCashChange = (checked: boolean) => { 
+    setFilters({ ...filters, isCash: checked });
+  }
+  const handleInvoiceChange = (checked: boolean) => {
+    setFilters({ ...filters, isInvoice: checked });
+  }
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
+
+  useEffect(() => {
+    setTableData(data);
+  }, [data]);
 
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  const hasSelected = selectedRowKeys.length > 0;
+
+  useEffect(() => {
+    // filter the tableData based on the filters
+    let filteredData = data;
+    if (filters) {
+      if (filters.createdDate) {
+        const { start, end } = filters.createdDate;
+        if(start === '' || end === '') {
+          setTableData(data);
+        }
+        filteredData = filteredData.filter((order) => {
+          const orderDate = dayjs(order.createdDate);
+          return orderDate.isBetween(start, end);
+        });
+        setTableData(filteredData);
+      } 
+      if (filters.deliveryDate) {
+        const { start, end } = filters.deliveryDate;
+        filteredData = filteredData.filter((order) => {
+          const orderDate = dayjs(order.deliveryDate);
+          return orderDate.isBetween(start, end);
+        });
+        setTableData(filteredData);
+      }
+      if (filters.isPaid) {
+        filteredData = filteredData.filter((order) => order.characteristics.isPaid);
+        setTableData(filteredData);
+      }
+      if (filters.isNewCustomer) {
+        filteredData = filteredData.filter((order) => order.characteristics.isNewCustomer);
+        setTableData(filteredData);
+      }
+      if(filters.isCard) {
+        filteredData = filteredData.filter((order) => order.characteristics.isCreditCard);
+        setTableData(filteredData);
+      }
+      if(filters.isCash) {
+        filteredData = filteredData.filter((order) => order.characteristics.isCash);
+        setTableData(filteredData);
+      }
+      if(filters.isInvoice) {
+        filteredData = filteredData.filter((order) => order.characteristics.hasInvoice);
+        setTableData(filteredData);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
+
+
 
   return (
-    <div>
-      <div style={{ marginBottom: 16 }}>
-        <Button
-          type="primary"
-          onClick={start}
-          disabled={!hasSelected}
-          loading={loading}
-        >
-          Reload
-        </Button>
-        <span style={{ marginLeft: 8 }}>
-          {hasSelected ? `Selected ${selectedRowKeys.length} items` : ""}
-        </span>
+    <div className="flex flex-col">
+      <div>
+        <Input.Search onChange={handleSearch} placeholder="search client names or ordernumbers" />
       </div>
-      <Table rowSelection={rowSelection} columns={columns} dataSource={data} />
+      <div className="flex flex-row">
+
+      <Filters
+        onCreatedDateChange={handleCreatedDateChange}
+        onDeliveryDateChange={hanldeDeliveryDateChange}
+        onNewCustomerChange={handleNewCustomerChange}
+        onCardChange={handleCardChange}
+        onCashChange={handleCashChange}
+        onInvoiceChange={handleInvoiceChange}
+        onPaidChange={handlePaidChange}
+        onResetFilters={() => setTableData(data)}
+      />
+      <Table
+        rowSelection={rowSelection}
+        columns={columns}
+        dataSource={tableData}
+      />
+      </div>
     </div>
   );
 };

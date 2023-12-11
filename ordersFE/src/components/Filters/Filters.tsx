@@ -1,25 +1,56 @@
-import React, { useState } from 'react';
-import { Checkbox } from 'antd'; // Import CheckboxValueType
-import { CheckboxValueType } from 'antd/es/checkbox/Group';
+import React from "react";
+import CheckboxFilter from "./FilterComponents/CheckBoxFilter/CheckBoxFilter";
+import CombinedCheckBoxFilter from "./FilterComponents/CombinedCheckBoxFilter/CombinedCheckBoxFilter";
+import DateFilter from "./FilterComponents/DateFilter/DateFilter";
+import { Button } from "antd";
+
+const options = ["cash_on_delivery", "card", "invoice"];
 
 interface FiltersProps {
-  onFilterChange: (selectedFilters: CheckboxValueType[]) => void; // Update the type
+  onCreatedDateChange: (dates: any, dateStrings: [string, string]) => void;
+  onDeliveryDateChange: (dates: any, dateStrings: [string, string]) => void;
+  onPaidChange: (checked: boolean) => void;
+  onNewCustomerChange: (checked: boolean) => void;
+  onCardChange: (checked: boolean) => void;
+  onCashChange: (checked: boolean) => void;
+  onInvoiceChange: (checked: boolean) => void;
+  onResetFilters: () => void;
+  //   onCombinedChange: (checkedValues: any[]) => void;
 }
 
-const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
-  const [selectedFilters, setSelectedFilters] = useState<CheckboxValueType[]>([]); // Update the type
-
-  const handleFilterChange = (checkedValues: CheckboxValueType[]) => { // Update the type
-    setSelectedFilters(checkedValues);
-    onFilterChange(checkedValues);
-  };
+const Filters: React.FC<FiltersProps> = (props: FiltersProps) => {
+  const {
+    onCreatedDateChange,
+    onDeliveryDateChange,
+    onPaidChange,
+    onNewCustomerChange,
+    onCardChange,
+    onCashChange,
+    onInvoiceChange,
+    onResetFilters,
+    onCombinedChange,
+  } = props;
 
   return (
-    <Checkbox.Group onChange={handleFilterChange} value={selectedFilters}>
-      <Checkbox value="filter1">Filter 1</Checkbox>
-      {/* Add more checkboxes as needed */}
-    </Checkbox.Group>
+    <div>
+      <DateFilter label="Date Order Created" onChange={onCreatedDateChange} />
+      <DateFilter
+        label="Date Order Delivered"
+        onChange={onDeliveryDateChange}
+      />
+      <CheckboxFilter label="Paid" onChange={onPaidChange} />
+      <CheckboxFilter label="New Client" onChange={onNewCustomerChange} />
+      <CheckboxFilter label="Card" onChange={onCardChange} />
+      <CheckboxFilter label="Cash" onChange={onCashChange} />
+      <CheckboxFilter label="Invoice" onChange={onInvoiceChange} />
+
+      <Button type="default" onClick={onResetFilters}> Reset Filters </Button>
+      {/* <CombinedCheckBoxFilter
+        options={options}
+        label="Payment methods"
+        onChange={onCombinedChange}
+      /> */}
+    </div>
   );
 };
-
 export default Filters;

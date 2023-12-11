@@ -16,6 +16,7 @@ class Order(models.Model):
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
     new_client = models.BooleanField(default=False)
     is_cancelled = models.BooleanField(default=False)
+    is_paid = models.BooleanField(default=False)
     
     def __str__(self):
         return f"Order #{self.id}"
