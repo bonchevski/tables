@@ -55,7 +55,7 @@ const OrderModal: React.FC<OrderModalProps> = (props: OrderModalProps) => {
             <Checkbox defaultChecked={orderCancelled} onChange={(e) => setOrderCancelled(e.target.checked)}> Cancelled </Checkbox>
           </Form.Item>
           <Form.Item>
-            <Button type="primary">Submit</Button>
+            <Button type="primary" className="bg-blue-700 text-white">Save Changes</Button>
             <Button onClick={handleCancel}>Cancel</Button>
           </Form.Item>
         </Form>
