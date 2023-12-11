@@ -1,52 +1,40 @@
 import React, { useEffect, useState } from "react";
-import { Input, Table } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { LuUserPlus } from "react-icons/lu";
-import { LuFilePlus2 } from "react-icons/lu";
-import { LuDollarSign } from "react-icons/lu";
-import { OrderCharacteristics, OrdersDataType, TableFilters } from "../../generalTypes/interface";
+import { Button, Input, Table } from "antd";
+import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
+
+import {
+  OrdersDataType,
+  TableFilters,
+} from "../../generalTypes/interface";
 import Filters from "../Filters/Filters";
-import dayjs from "dayjs";
-import { formatDate } from "../../utils";
+import { filterTableData, formatDate } from "../../utils";
+import './ordersTable.scss';
+import { deleteOrderById } from "../../api/api";
+import OrderModal from "../OrderModal/OrderModal";
 
-
-
-const columns: ColumnsType<OrdersDataType> = [
-  {
-    title: "Order Number",
-    dataIndex: "orderNumber",
-  },
-  {
-    title: "Name",
-    dataIndex: "clientName",
-  },
-  {
-    title: "Price",
-    dataIndex: "price",
-  },
-  {
-    title: "characteristics",
-    dataIndex: "characteristics",
-    render: (characteristics: OrderCharacteristics) => (
-      <div className="flex flex-row px-1">
-        {characteristics.isPaid && <LuDollarSign />}
-        {characteristics.hasInvoice && <LuFilePlus2 />}
-        {characteristics.isNewCustomer && <LuUserPlus />}
-      </div>
-    ),
-  },
-];
 
 interface OrdersTableProps {
   data: OrdersDataType[];
+  columns: ColumnsType<OrdersDataType>;
+  pagination?: false | TablePaginationConfig;
 }
 
 const OrdersTable: React.FC<OrdersTableProps> = (props: OrdersTableProps) => {
-  const { data } = props;
+  const { data, columns, pagination } = props;
   const [tableData, setTableData] = useState<OrdersDataType[]>(data); // Replace 'any[]' with your actual data type
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [singleOrder, setSingleOrder] = useState<OrdersDataType>();
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  const [filters, setFilters] = React.useState<TableFilters>();
+  const [filters, setFilters] = React.useState<TableFilters>({
+    createdDate: null,
+    deliveryDate: null,
+    isCard: false,
+    isCash: false,
+    isInvoice: false,
+    isPaid: false,
+    isNewCustomer: false,
+    cancelled: false,
+  });
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
     const filteredData = data.filter((order) => {
@@ -54,33 +42,31 @@ const OrdersTable: React.FC<OrdersTableProps> = (props: OrdersTableProps) => {
       return orderNumber.includes(value) || clientName.includes(value);
     });
     setTableData(filteredData);
-  }
+  };
   const handleCreatedDateChange = (
-    dates: any,
+    dates: unknown,
     dateStrings: [string, string]
   ) => {
     const [startDate, endDate] = dateStrings;
     const start = formatDate(startDate);
     const end = formatDate(endDate);
-    if(start === 'Invalid Date' || end === 'Invalid Date') {
-      setTableData(data);
+    if (start === "Invalid Date" || end === "Invalid Date") {
       setFilters({ ...filters, createdDate: null });
-
     } else {
       setFilters({ ...filters, createdDate: { start, end } });
     }
   };
 
   const hanldeDeliveryDateChange = (
-    dates: any,
+    dates: unknown,
     dateStrings: [string, string]
   ) => {
     const [startDate, endDate] = dateStrings;
     const start = formatDate(startDate);
     const end = formatDate(endDate);
     setFilters({ ...filters, deliveryDate: { start, end } });
-    if(start === 'Invalid Date' || end === 'Invalid Date') {
-      setTableData(data);
+    if (start === "Invalid Date" || end === "Invalid Date") {
+      setFilters({ ...filters, deliveryDate: null });
     } else {
       setFilters({ ...filters, createdDate: { start, end } });
     }
@@ -96,99 +82,80 @@ const OrdersTable: React.FC<OrdersTableProps> = (props: OrdersTableProps) => {
 
   const handleCardChange = (checked: boolean) => {
     setFilters({ ...filters, isCard: checked });
-  }
-  const handleCashChange = (checked: boolean) => { 
+  };
+  const handleCashChange = (checked: boolean) => {
     setFilters({ ...filters, isCash: checked });
-  }
+  };
   const handleInvoiceChange = (checked: boolean) => {
     setFilters({ ...filters, isInvoice: checked });
+  };
+
+  const handleFilterChange = (data: OrdersDataType[], filters: TableFilters) => {
+    const filteredTableData = filterTableData(data, filters);
+    setTableData(filteredTableData);
+  }
+ const getRowClassName = (record: OrdersDataType) => {
+    // Check the value of the 'status' property and return a class name accordingly
+    return record.characteristics.isCancelled  ? 'cancelled-order' : '';
+  };
+
+  const handleDelete = (singleOrder: OrdersDataType) => {
+    const id = singleOrder.key.toString();
+    deleteOrderById(id);
   }
 
-  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    setSelectedRowKeys(newSelectedRowKeys);
-  };
+  const handleEdit = () => {
+    setIsModalOpen(true);
+  }
 
   useEffect(() => {
-    setTableData(data);
-  }, [data]);
+    handleFilterChange(data, filters)
+  }, [data, filters]);
 
   const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
+    onSelect: (record: OrdersDataType, selected: boolean, selectedRows: OrdersDataType[], nativeEvent: Event) => {
+      setSingleOrder(record);
+    }
   };
 
-  useEffect(() => {
-    // filter the tableData based on the filters
-    let filteredData = data;
-    if (filters) {
-      if (filters.createdDate) {
-        const { start, end } = filters.createdDate;
-        if(start === '' || end === '') {
-          setTableData(data);
-        }
-        filteredData = filteredData.filter((order) => {
-          const orderDate = dayjs(order.createdDate);
-          return orderDate.isBetween(start, end);
-        });
-        setTableData(filteredData);
-      } 
-      if (filters.deliveryDate) {
-        const { start, end } = filters.deliveryDate;
-        filteredData = filteredData.filter((order) => {
-          const orderDate = dayjs(order.deliveryDate);
-          return orderDate.isBetween(start, end);
-        });
-        setTableData(filteredData);
-      }
-      if (filters.isPaid) {
-        filteredData = filteredData.filter((order) => order.characteristics.isPaid);
-        setTableData(filteredData);
-      }
-      if (filters.isNewCustomer) {
-        filteredData = filteredData.filter((order) => order.characteristics.isNewCustomer);
-        setTableData(filteredData);
-      }
-      if(filters.isCard) {
-        filteredData = filteredData.filter((order) => order.characteristics.isCreditCard);
-        setTableData(filteredData);
-      }
-      if(filters.isCash) {
-        filteredData = filteredData.filter((order) => order.characteristics.isCash);
-        setTableData(filteredData);
-      }
-      if(filters.isInvoice) {
-        filteredData = filteredData.filter((order) => order.characteristics.hasInvoice);
-        setTableData(filteredData);
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
-
-
-
   return (
-    <div className="flex flex-col">
+    <div className="orders-table-root">
       <div>
-        <Input.Search onChange={handleSearch} placeholder="search client names or ordernumbers" />
+        <Input.Search
+          onChange={handleSearch}
+          placeholder="search client names or ordernumbers"
+        />
       </div>
       <div className="flex flex-row">
-
-      <Filters
-        onCreatedDateChange={handleCreatedDateChange}
-        onDeliveryDateChange={hanldeDeliveryDateChange}
-        onNewCustomerChange={handleNewCustomerChange}
-        onCardChange={handleCardChange}
-        onCashChange={handleCashChange}
-        onInvoiceChange={handleInvoiceChange}
-        onPaidChange={handlePaidChange}
-        onResetFilters={() => setTableData(data)}
-      />
-      <Table
-        rowSelection={rowSelection}
-        columns={columns}
-        dataSource={tableData}
-      />
+        <Filters
+          onCreatedDateChange={handleCreatedDateChange}
+          onDeliveryDateChange={hanldeDeliveryDateChange}
+          onNewCustomerChange={handleNewCustomerChange}
+          onCardChange={handleCardChange}
+          onCashChange={handleCashChange}
+          onInvoiceChange={handleInvoiceChange}
+          onPaidChange={handlePaidChange}
+          onResetFilters={() => setTableData(data)}
+        />
+        <div>
+          {singleOrder && (
+            <>
+            <Button type="default" onClick={() => handleEdit()}>Edit record</Button>
+            <Button type="default" className="bg-red-800 text-white" onClick={() => handleDelete(singleOrder)}>Delete Record</Button>
+            </>
+          )}
+        <Table
+          rowSelection={rowSelection}
+          columns={columns}
+          dataSource={tableData}
+          rowClassName={getRowClassName}
+          pagination={pagination}
+        />
+        </div>
       </div>
+      {singleOrder && isModalOpen && (
+        <OrderModal data={singleOrder} isOpen={isModalOpen} />
+      )}
     </div>
   );
 };

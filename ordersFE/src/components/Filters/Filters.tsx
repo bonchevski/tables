@@ -1,14 +1,12 @@
 import React from "react";
 import CheckboxFilter from "./FilterComponents/CheckBoxFilter/CheckBoxFilter";
-import CombinedCheckBoxFilter from "./FilterComponents/CombinedCheckBoxFilter/CombinedCheckBoxFilter";
 import DateFilter from "./FilterComponents/DateFilter/DateFilter";
 import { Button } from "antd";
 
-const options = ["cash_on_delivery", "card", "invoice"];
 
 interface FiltersProps {
-  onCreatedDateChange: (dates: any, dateStrings: [string, string]) => void;
-  onDeliveryDateChange: (dates: any, dateStrings: [string, string]) => void;
+  onCreatedDateChange: (dates: unknown, dateStrings: [string, string]) => void;
+  onDeliveryDateChange: (dates: unknown, dateStrings: [string, string]) => void;
   onPaidChange: (checked: boolean) => void;
   onNewCustomerChange: (checked: boolean) => void;
   onCardChange: (checked: boolean) => void;
@@ -28,7 +26,6 @@ const Filters: React.FC<FiltersProps> = (props: FiltersProps) => {
     onCashChange,
     onInvoiceChange,
     onResetFilters,
-    onCombinedChange,
   } = props;
 
   return (
@@ -45,11 +42,6 @@ const Filters: React.FC<FiltersProps> = (props: FiltersProps) => {
       <CheckboxFilter label="Invoice" onChange={onInvoiceChange} />
 
       <Button type="default" onClick={onResetFilters}> Reset Filters </Button>
-      {/* <CombinedCheckBoxFilter
-        options={options}
-        label="Payment methods"
-        onChange={onCombinedChange}
-      /> */}
     </div>
   );
 };

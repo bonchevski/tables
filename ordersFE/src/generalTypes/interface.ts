@@ -26,24 +26,21 @@ import { CheckboxValueType } from "antd/es/checkbox/Group";
   clientName: string;
   price: number;
   characteristics: OrderCharacteristics;
-  cancelled?: boolean;
+  cancelled: boolean;
 }
 
 export interface DateRange {
-  start: string;
-  end: string;
+  start: string | null;
+  end: string | null;
 }
 
 export interface TableFilters {
-  createdDate?: DateRange | null;
-  deliveryDate?:{
-    start: string;
-    end: string;
-  };
-  isCard?: boolean;
-  isCash?: boolean;
-  isInvoice?: boolean;
-  isPaid?: boolean;
-  isNewCustomer?: boolean;
-  cancelled?: boolean;
+  createdDate: DateRange | null;
+  deliveryDate: DateRange | null;
+  isCard: boolean;
+  isCash: boolean;
+  isInvoice: boolean;
+  isPaid: boolean;
+  isNewCustomer: boolean;
+  cancelled: boolean;
 }

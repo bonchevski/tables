@@ -65,6 +65,14 @@ CORS_ALLOW_METHODS = [
     'POST',
     'PUT',
 ]
+CORS_ALLOW_HEADERS = [
+    'access-control-allow-origin',
+    'content-type',
+    # ...
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
 
 ROOT_URLCONF = 'ordersBE.urls'
 

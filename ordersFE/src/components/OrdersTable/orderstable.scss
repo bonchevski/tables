@@ -1,0 +1,14 @@
+.orders-table-root {
+    @apply flex flex-col;
+    .cancelled-order {
+       background-color: darkgray !important;
+       color: light-gray !important;
+       text-decoration:line-through;
+       &:hover {
+           background-color: darkgray !important;
+            cursor:not-allowed;
+            color: light-gray !important;
+        }
+
+    }
+}
